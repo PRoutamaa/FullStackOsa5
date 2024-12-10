@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
-import Notification from './components/Notification'
+import LoggedIn from './components/LoggedIn'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import LogOutButton from './components/LogOutButton'
+import BlogForm from './components/BlogForm'
+import Notification from './components/Notification'
+import LoginForm from './components/LoginForm'
 
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [newBlog, setNewBlog] = useState({ title: "", author: "", url: "" })
+  const [title, setTitle] = useState("")
+  const [author, setAuthor] = useState("")
   const [errorMessage, setErrorMessage] = useState(null)
   const [username, setUsername] = useState('') 
   const [password, setPassword] = useState('') 
@@ -29,6 +34,7 @@ const App = () => {
     }
   }, [])
 
+
   const handleLogin = async (event) => {
     event.preventDefault()
     
@@ -44,7 +50,7 @@ const App = () => {
       setUsername('')
       setPassword('')
     } catch (exception) {
-      setErrorMessage('wrong credentials')
+      setErrorMessage('wrong username of password')
       setTimeout(() => {
         setErrorMessage(null)
       }, 5000)
@@ -59,30 +65,6 @@ const App = () => {
     console.log('logged out')
   }
 
-  const loginForm = () => (
-    <form onSubmit={handleLogin}>
-      <div>
-        username
-          <input
-          type="text"
-          value={username}
-          name="Username"
-          onChange={({ target }) => setUsername(target.value)}
-        />
-      </div>
-      <div>
-        password
-          <input
-          type="password"
-          value={password}
-          name="Password"
-          onChange={({ target }) => setPassword(target.value)}
-        />
-      </div>
-      <button type="submit">login</button>
-    </form>      
-  )
-
   const handleBlogChange = (event) => {
     event.preventDefault()
     const { name, value } = event.target
@@ -92,61 +74,44 @@ const App = () => {
     }))
   }
 
-  const addBlog = () => {
+  const addBlog = (event) => {
+    event.preventDefault()
     blogService.createNewBlog(newBlog)
+    setBlogs(blogs.concat(newBlog))
+    setTitle(newBlog.title)
+    setAuthor(newBlog.author)
+    setNewBlog({ title: "", author: "", url: "" })
+    setTimeout(() => {
+      setAuthor("")
+      setTitle("")
+    }, 5000)
   }
 
-  const blogForm = () => (
-    <form onSubmit={addBlog}>
-      <h2>Create new blogpost</h2>
-      <div>
-        title:
-        <input
-          type="text"
-          value={newBlog.title}
-          name="title"
-          onChange={handleBlogChange}
-        />
-      </div>
-      <div>
-        author:
-        <input
-          type='text'
-          name="author"
-          value={newBlog.author}
-          onChange={handleBlogChange}
-        />
-      </div>  
-      <div>
-        url:
-        <input
-          type='text'
-          name="url"
-          value={newBlog.url}
-          onChange={handleBlogChange}
-        />
-      </div>
-      <button type="create">save</button>
-    </form>  
-  )
 
   if (user === null) {
     return (
       <div>
         <h2>Log in to application</h2>
-        {errorMessage ? <p className='errorMessage'>{errorMessage}</p> : null}
-        {loginForm()}
+        {errorMessage ? <p>{errorMessage}</p> : null}
+        <LoginForm 
+        username={username} 
+        password={password} 
+        handleLogin={handleLogin} 
+        setPassword={setPassword} 
+        setUsername={setUsername}
+        />
       </div>
     )
   }
   return (
     <div>
       <h2>Blogs</h2> 
+      <Notification title={title} author={author} />
       <div style={{ display: 'flex', justifyContent: 'left' }}>
-      <Notification userName={user.name} />
+      <LoggedIn userName={user.name} />
       <LogOutButton handleLogOut={handleLogOut} />
       </div>
-      {blogForm()}
+      <BlogForm addBlog={addBlog} newBlog={newBlog} handleBlogChange={handleBlogChange} />
       {blogs.sort((a, b) => a.title.localeCompare(b.title)).map(blog => {
         return <Blog key={blog.id} blog={blog} />
       })}
