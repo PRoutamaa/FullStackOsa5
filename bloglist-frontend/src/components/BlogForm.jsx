@@ -26,6 +26,7 @@ const BlogForm = ({ createBlog }) => {
       <div>
       title:
         <input
+          data-testid='title'
           type="text"
           value={newBlog.title}
           name="title"
@@ -35,6 +36,7 @@ const BlogForm = ({ createBlog }) => {
       <div>
       author:
         <input
+          data-testid='author'
           type='text'
           name="author"
           value={newBlog.author}
@@ -44,6 +46,7 @@ const BlogForm = ({ createBlog }) => {
       <div>
       url:
         <input
+          data-testid='url'
           type='text'
           name="url"
           value={newBlog.url}
